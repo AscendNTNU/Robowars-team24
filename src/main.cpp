@@ -13,7 +13,7 @@
 #define DC_FREQ 20000
 #define BLDC_FREQ 50
 
-//LEDC channels
+//LEDC channels esp-hal uses modulo 4 to select timers for different channels, therefore BLDC is the only odd channel 
 #define BLDC_CHAN 1
 #define MOTOR_L_CHAN0 2
 #define MOTOR_L_CHAN1 4
@@ -21,7 +21,7 @@
 #define MOTOR_R_CHAN1 8
 
 //Motor structs setup
-Motor motorWeapon {BLDC_PIN, 0, BLDC_CHAN, 10, BLDC_FREQ, MOTOR_TYPE_BLDC};
+Motor motorWeapon {BLDC_PIN, 0, BLDC_CHAN, 0, BLDC_FREQ, MOTOR_TYPE_BLDC};
 Motor motorRight {MOTOR_R_PIN0, MOTOR_R_PIN1, MOTOR_R_CHAN0, MOTOR_R_CHAN1, DC_FREQ, MOTOR_TYPE_DC};
 Motor motorLeft {MOTOR_L_PIN0, MOTOR_L_PIN1, MOTOR_L_CHAN0, MOTOR_L_CHAN1, DC_FREQ, MOTOR_TYPE_DC};
 
@@ -46,7 +46,6 @@ void setup() {
   motorInit(motorLeft);
   motorInit(motorRight);
 
-  Serial.printf("Test\n");
   PS4.begin("dc:e9:94:b5:b6:5e\n");
 }
 
