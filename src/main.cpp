@@ -25,17 +25,42 @@ Motor motorWeapon {BLDC_PIN, 0, BLDC_CHAN, 0, BLDC_FREQ, MOTOR_TYPE_BLDC};
 Motor motorRight {MOTOR_R_PIN0, MOTOR_R_PIN1, MOTOR_R_CHAN0, MOTOR_R_CHAN1, DC_FREQ, MOTOR_TYPE_DC};
 Motor motorLeft {MOTOR_L_PIN0, MOTOR_L_PIN1, MOTOR_L_CHAN0, MOTOR_L_CHAN1, DC_FREQ, MOTOR_TYPE_DC};
 
+int LStickY_offset = 0;
+int RStickX_offset = 0;
+int R2Value_offset = 0;
+
 void steering(Motor motorLeft, Motor motorRight, PS4Controller PS4) {
   if(PS4.isConnected()) {
-    setMotorSpeed(PS4.LStickY(), motorLeft);
-    setMotorSpeed(PS4.RStickY(), motorRight);
-    setMotorSpeed(PS4.RStickX(), motorWeapon);
+    int8_t motor_speed_L = 0;
+    int8_t motor_speed_R = 0;
+    motor_speed_L += PS4.LStickY() - LStickY_offset;
+    motor_speed_R += PS4.LStickY() -  LStickY_offset;
+
+    motor_speed_L -= PS4.RStickX() - RStickX_offset; //Maybe divide these or abs
+    motor_speed_R += PS4.RStickX() - RStickX_offset; //Maybe divide these or abs
+
+    /* Test this
+    if(abs(motor_speed_L) < 2) {
+      motor_speed_L = 0;
+    }
+    if(abs(motor_speed_R) < 2) {
+      motor_speed_R = 0;
+    }
+    */
+    setMotorSpeed(motor_speed_L, motorLeft);
+    setMotorSpeed(motor_speed_R, motorRight);
+    setMotorSpeed(PS4.R2Value() - R2Value_offset, motorWeapon); //This must be tested
   }
   else {
     setMotorSpeed(0, motorLeft);
     setMotorSpeed(0, motorRight);
     setMotorSpeed(0, motorWeapon);
   }
+}
+void PS4_calibrate() {
+  int LStickY_offset = PS4.LStickY();
+  int RStickX_offset = PS4.RStickX();
+  int R2Value_offset = PS4.R2Value();
 }
 
 void setup() {
@@ -45,8 +70,14 @@ void setup() {
   motorInit(motorWeapon);
   motorInit(motorLeft);
   motorInit(motorRight);
-
+  
+  Serial.printf("Test\n");
   PS4.begin("dc:e9:94:b5:b6:5e\n");
+  while(!PS4.isConnected()) {
+    Serial.print("Connecting to PS4-controller");
+  }
+  delay(200);
+  PS4_calibrate();
 }
 
 void loop() {
